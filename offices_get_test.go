@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-func TestUsersGet(t *testing.T) {
-	req := client.NewUsersGetRequest()
-	req.QueryParams().ID = 448450
+func TestOfficesGet(t *testing.T) {
+	req := client.NewOfficesGetRequest()
+	// req.QueryParams().Account = "FLD"
 	resp, err := req.Do()
 	if err != nil {
 		t.Error(err)

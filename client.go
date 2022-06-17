@@ -26,7 +26,7 @@ const (
 )
 
 var (
-	BaseURL string = "https://deltacapita.api.timesheetportal.com/"
+	BaseURL string = "https://app.planning.nu/{{.system_name}}/api2"
 )
 
 // NewClient returns a new Exact Globe Client client
@@ -56,6 +56,8 @@ type Client struct {
 	baseURL string
 
 	// credentials
+	systemName string
+	api2Token  string
 
 	// User agent for client
 	userAgent string
@@ -86,13 +88,29 @@ func (c *Client) SetDebug(debug bool) {
 	c.debug = debug
 }
 
+func (c Client) SystemName() string {
+	return c.systemName
+}
+
+func (c *Client) SetSystemName(systemName string) {
+	c.systemName = systemName
+}
+
+func (c Client) API2Token() string {
+	return c.api2Token
+}
+
+func (c *Client) SetAPI2Token(api2Token string) {
+	c.api2Token = api2Token
+}
+
 func (c Client) BaseURL() (*url.URL, error) {
 	tmpl, err := template.New("host").Parse(c.baseURL)
 	if err != nil {
 		return &url.URL{}, err
 	}
 	buf := new(bytes.Buffer)
-	err = tmpl.Execute(buf, map[string]interface{}{})
+	err = tmpl.Execute(buf, map[string]interface{}{"system_name": c.SystemName()})
 	if err != nil {
 		return &url.URL{}, err
 	}
