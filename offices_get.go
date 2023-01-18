@@ -105,7 +105,9 @@ func (r *OfficesGetRequest) NewResponseBody() *OfficesResponseBody {
 	return &OfficesResponseBody{}
 }
 
-type OfficesResponseBody Offices
+type OfficesResponseBody struct {
+	Offices Offices `json:"offices"`
+}
 
 func (r *OfficesGetRequest) URL() (*url.URL, error) {
 	u, err := r.client.GetEndpointURL("/offices", r.PathParams())

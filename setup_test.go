@@ -14,8 +14,6 @@ var (
 func TestMain(m *testing.M) {
 	debug := os.Getenv("DEBUG")
 	systemName := os.Getenv("SYSTEM_NAME")
-	posClientID := os.Getenv("POS_CLIENT_ID")
-	posToken := os.Getenv("POS_TOKEN")
 	api2Token := os.Getenv("API2_TOKEN")
 
 	client = dyflexis.NewClient(nil)
