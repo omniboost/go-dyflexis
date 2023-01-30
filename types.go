@@ -79,3 +79,11 @@ func (c Contract) MarshalJSON() ([]byte, error) {
 func (c Contract) IsEmpty() bool {
 	return zero.IsZero(c)
 }
+
+type ContractTypes []ContractType
+
+type ContractType struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	FixedBase bool   `json:"fixedBase"`
+}
