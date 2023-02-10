@@ -283,15 +283,15 @@ func (c *Client) Do(req *http.Request, body interface{}) (*http.Response, error)
 		return httpResp, nil
 	}
 
-	// errResp := &ErrorResponse{Response: httpResp}
-	err = c.Unmarshal(httpResp.Body, body)
+	errResp := &ErrorResponse{Response: httpResp}
+	err = c.Unmarshal(httpResp.Body, body, errResp)
 	if err != nil {
 		return httpResp, err
 	}
 
-	// if errResp.Error() != "" {
-	// 	return httpResp, errResp
-	// }
+	if errResp.Error() != "" {
+		return httpResp, errResp
+	}
 
 	return httpResp, nil
 }
@@ -383,13 +383,15 @@ func CheckResponse(r *http.Response) error {
 }
 
 // {
-//   "type": "https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4",
-//   "title": "Forbidden",
-//   "status": 403,
-//   "o:errorDetails": [
+//   "status": "warning",
+//   "warnings": [
 //     {
-//       "detail": "The account record is only available as a beta record. Enable the REST Record Service (Beta) feature in Setup > Company > Enable Features to work with this record.",
-//       "o:errorCode": "INSUFFICIENT_PERMISSION"
+//       "contractReference": "114-1",
+//       "type": "invalid_data",
+//       "data": {
+//         "startDate": "2022-09-01T00:00:00Z",
+//         "endDate": null
+//       }
 //     }
 //   ]
 // }
@@ -398,43 +400,77 @@ type ErrorResponse struct {
 	// HTTP response that caused this error
 	Response *http.Response
 
-	Type         string       `json:"type"`
-	Title        interface{}  `json:"title"`
-	Status       int          `json:"status"`
-	ErrorDetails ErrorDetails `json:"o:errorDetails"`
+	Status      string `json:"status"`
+	Warnings    Warnings
+	FieldErrors FieldErrors `json:"data"`
 }
 
 func (r *ErrorResponse) Error() string {
 	errors := []string{}
 
-	for _, d := range r.ErrorDetails {
-		err := d.Error()
+	for _, w := range r.Warnings {
+		err := w.Error()
 		if err != "" {
 			errors = append(errors, err)
 		}
 	}
 
+	// for _, e := range r.FieldErrors {
+	// 	err := e.Error()
+	// 	if err != "" {
+	// 		errors = append(errors, err)
+	// 	}
+	// }
+
 	return strings.Join(errors, "\r\n")
 }
 
-type ErrorDetails []ErrorDetail
+type Warnings []Warning
 
-type ErrorDetail struct {
-	Detail    string `json:"detail"`
-	ErrorCode string `json:"o:errorCode"`
+type Warning struct {
+	ContractReference string            `json:"contractReference"`
+	Type              string            `json:"type"`
+	Data              map[string]string `json:"data"`
 }
 
-func (d *ErrorDetail) Error() string {
-	if d.ErrorCode != "" {
-		return fmt.Sprintf("%s: %s", d.ErrorCode, d.Detail)
+func (w Warning) Error() string {
+	b, _ := json.Marshal(w)
+	return string(b)
+}
+
+// {
+//   "status": "warning",
+//   "data": [
+//     {
+//       "fieldName": "maritalStatus",
+//       "value": "Onbekend"
+//     },
+//     {
+//       "fieldName": "gender",
+//       "value": "Vrouw"
+//     }
+//   ]
+// }
+
+type FieldErrors []FieldError
+
+type FieldError struct {
+	FieldName string `json:"fieldName"`
+	Value     string `json:"value"`
+}
+
+func (e FieldError) Error() string {
+	if e.FieldName != "" && e.Value != "" {
+		return fmt.Sprintf("%s: %s", e.FieldName, e.Value)
 	}
+
 	return ""
 }
 
 func checkContentType(response *http.Response) error {
 	header := response.Header.Get("Content-Type")
 	contentType := strings.Split(header, ";")[0]
-	if contentType != "application/vnd.oracle.resource+json" {
+	if contentType != "application/json" {
 		return fmt.Errorf("Expected Content-Type \"%s\", got \"%s\"", mediaType, contentType)
 	}
 

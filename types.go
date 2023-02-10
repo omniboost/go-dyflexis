@@ -61,6 +61,8 @@ func (e Employee) IsEmpty() bool {
 	return zero.IsZero(e)
 }
 
+type Contracts []Contract
+
 type Contract struct {
 	ContractReference string  `json:"contractReference"`
 	Office            int     `json:"office"`

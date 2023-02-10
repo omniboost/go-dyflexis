@@ -89,7 +89,7 @@ func (r EmployeesContractPostRequest) NewRequestBody() EmployeesContractPostRequ
 	return EmployeesContractPostRequestBody{}
 }
 
-type EmployeesContractPostRequestBody Contract
+type EmployeesContractPostRequestBody Contracts
 
 func (r *EmployeesContractPostRequest) RequestBody() *EmployeesContractPostRequestBody {
 	return &r.requestBody
