@@ -415,12 +415,12 @@ func (r *ErrorResponse) Error() string {
 		}
 	}
 
-	// for _, e := range r.FieldErrors {
-	// 	err := e.Error()
-	// 	if err != "" {
-	// 		errors = append(errors, err)
-	// 	}
-	// }
+	for _, e := range r.FieldErrors {
+		err := e.Error()
+		if err != "" {
+			errors = append(errors, err)
+		}
+	}
 
 	return strings.Join(errors, "\r\n")
 }
